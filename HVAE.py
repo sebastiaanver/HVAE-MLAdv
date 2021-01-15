@@ -12,17 +12,16 @@ class Encoder(tfkl.Layer):
         self, latent_dim=32, intermediate_dim=64, name="encoder", **kwargs,
     ):
         super(Encoder, self).__init__(name=name, **kwargs)
-        #  TODO: Allow for two different latent dimensions in z1/z2
 
         self.initializer = tf.keras.initializers.HeNormal()
 
         # q(z2|x)
         self.dense_proj_z2_x_1 = GatedDense(
             intermediate_dim, name="dense_proj_z2_1"
-        )  # Same as q_z2_layers in vampprior
+        )
         self.dense_proj_z2_x_2 = GatedDense(
             intermediate_dim, name="dense_proj_z2_2"
-        )  # Same as q_z2_layers in vampprior
+        )
 
         self.dense_mean_z2 = tfkl.Dense(latent_dim, kernel_initializer=self.initializer)
         self.dense_log_var_z2 = tfkl.Dense(
@@ -35,7 +34,7 @@ class Encoder(tfkl.Layer):
 
         self.dense_proj_z1_joint = GatedDense(
             intermediate_dim, name="dense_proj_z1_joint"
-        )  # Layers that receives both  x and z2.
+        )
 
         self.dense_mean_z1 = tfkl.Dense(latent_dim, kernel_initializer=self.initializer)
         self.dense_log_var_z1 = tfkl.Dense(
@@ -193,9 +192,7 @@ class PseudoInputs(tfkl.Layer):
     def __init__(self, output_size, initializer, name, **kwargs):
         super(PseudoInputs, self).__init__(name=name, **kwargs)
 
-        self.layer = tfkl.Dense(
-            output_size, use_bias=False,
-        )
+        self.layer = tfkl.Dense(output_size, use_bias=False,)
 
     def call(self, x):
         x = self.layer(x)
@@ -205,7 +202,6 @@ class PseudoInputs(tfkl.Layer):
 
 
 class HierarchicalVariationalAutoEncoder(tf.keras.Model):
-    """From: https://www.tensorflow.org/guide/keras/custom_layers_and_models#putting_it_all_together_an_end-to-end_example"""
 
     def __init__(self, config, nr_inputs=None, name="autoencoder", **kwargs):
         super(HierarchicalVariationalAutoEncoder, self).__init__(name=name, **kwargs)
@@ -246,10 +242,6 @@ class HierarchicalVariationalAutoEncoder(tf.keras.Model):
                 [n, self.config["latent_dim"]], 0, 1, tf.float32, seed=42
             )
         elif self.config["prior"] == "vampprior":
-            print(self.idle_inputs[0:1])
-            print(self.means(self.idle_inputs[0:1]))
-            print(self.idle_inputs[1:2])
-            print(self.means(self.idle_inputs[1:2]))
             means = self.means(self.idle_inputs)[0:n]
             _, _, _, z2_sampled, _, _ = self.encoder(means)
 
@@ -272,9 +264,6 @@ class HierarchicalVariationalAutoEncoder(tf.keras.Model):
         return output_mean
 
     def set_pseudoinputs(self):
-        """
-        TODO: Check Hardtanh, which is used in the paper in the layer
-        """
         # Initialize layer weights.
         if self.config["use_training_data_init"]:
             initializer = tf.keras.initializers.Constant(
@@ -292,7 +281,7 @@ class HierarchicalVariationalAutoEncoder(tf.keras.Model):
                 self.config["nr_components"] if not self.nr_inputs else self.nr_inputs
             ),
             trainable=False,
-        )  # This is used to select a number of pseudo inputs from self.means.
+        )
 
     def get_number_of_active_units(self, x):
         _, z1_mean, _, _, z2_mean, _ = self.encoder(x)

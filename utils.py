@@ -63,13 +63,13 @@ def display_images(in_, out, config: Dict, label=None, count=False) -> None:
         plt.figure(figsize=(18, 4))
         for i in range(4):
             plt.subplot(1, 4, i + 1)
-            plt.imshow(in_pic[i + 4], cmap='gray')
+            plt.imshow(in_pic[i + 4], cmap="gray")
             plt.axis("off")
     out_pic = tf.reshape(out, [-1, img_rows, img_cols])
     plt.figure(figsize=(18, 6))
     for i in range(4):
         plt.subplot(1, 4, i + 1)
-        plt.imshow(out_pic[i + 4], cmap='gray')
+        plt.imshow(out_pic[i + 4], cmap="gray")
         plt.axis("off")
         if count:
             plt.title(str(4 + i), color="w")
@@ -78,9 +78,9 @@ def display_images(in_, out, config: Dict, label=None, count=False) -> None:
 
 def display_images_grid(out, config: Dict, save=False) -> None:
     dataset = config["dataset_used"]
-    plt.figure(figsize=(10,10))
+    plt.figure(figsize=(10, 10))
     gs1 = gridspec.GridSpec(4, 4)
-    gs1.update(wspace=0.025, hspace=0.05) # set the spacing between axes.
+    gs1.update(wspace=0.025, hspace=0.05)  # set the spacing between axes.
 
     img_rows, img_cols = (
         config["dataset"][dataset]["rows"],
@@ -90,7 +90,7 @@ def display_images_grid(out, config: Dict, save=False) -> None:
 
     for i in range(16):
         plt.subplot(gs1[i])
-        plt.imshow(out_pic[i], cmap='gray')
+        plt.imshow(out_pic[i], cmap="gray")
         plt.axis("off")
     if save:
         plt.savefig("img.jpg")
@@ -127,43 +127,29 @@ def loss_function_hvae(
 def calculate_likelihood(
     vae, test_dataset, model_type: str, config: Dict, S=5000, MB=100
 ):
-    """
-    Args:
-        vae: Trained model.
-        test_dataset:  Data.
-        S: Number of samples used for approximating log-likelihood.
-        MB: Size of a mini-batch used for approximating log-likelihood.
-
-    """
     for test_batch in test_dataset:
         data = test_batch
         N_test = data.shape[0]
         likelihood_test = []
 
-        #  If the number of samples is lower than the sample in batch
         if S <= MB:
             R = 1
 
         else:
-            R = S / MB  # Number of runs
-            S = MB  # Number of samples per run
+            R = S / MB
+            S = MB
 
-        # Loop over all items in test set X
         for j in range(N_test):
             if j % 100 == 0:
                 print("{:.2f}%".format(j / (1.0 * N_test) * 100))
 
-            # Take x*
-            x_single = tf.expand_dims(
-                data[j], 0
-            )
+            x_single = tf.expand_dims(data[j], 0)
 
             a = []
             for r in range(int(R)):
-                # Repeat it for all training points
                 x = tf.repeat(
                     x_single, [S], axis=0
-                )  # Same as expand in Pytorch (just multiplying it)
+                )
 
                 if model_type == "hierarchical":
                     (
@@ -197,7 +183,6 @@ def calculate_likelihood(
 
                 a.append(-a_tmp.numpy())
 
-            # calculate max
             a = np.asarray(a)
             a = np.reshape(a, (a.shape[0] * a.shape[1], 1))
             likelihood_x = logsumexp(a)

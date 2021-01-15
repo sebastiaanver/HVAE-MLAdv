@@ -16,15 +16,14 @@ class Encoder(tfkl.Layer):
         **kwargs,
     ):
         super(Encoder, self).__init__(name=name, **kwargs)
-        # self.dense_proj = tfkl.Dense(intermediate_dim, activation="relu")
 
         self.initializer = tf.keras.initializers.HeNormal()
         self.dense_proj_1 = GatedDense(
             intermediate_dim, name="dense_proj_1"
-        )  # Same as q_z_layers in vampprior
+        )
         self.dense_proj_2 = GatedDense(
             intermediate_dim, name="dense_proj_2"
-        )  # Same as q_z_layers in vampprior
+        )
 
         self.dropout_layer = tfkl.Dropout(rate=0.2)
 
@@ -36,18 +35,10 @@ class Encoder(tfkl.Layer):
 
     def call(self, inputs, training=False):
         x = self.dense_proj_1(inputs)
-        # if training:
-        #     x = self.dropout_layer(x)
         x = self.dense_proj_2(x)
-        # if training:
-        #     x = self.dropout_layer(x)
         z_mean = self.dense_mean(x)
-        # if training:
-        #     z_mean = self.dropout_layer(z_mean)
         z_log_var = self.dense_log_var(x)
         z_log_var = tf.clip_by_value(z_log_var, clip_value_min=-6.0, clip_value_max=2.0)
-        # if training:
-        #     z_log_var = self.dropout_layer(z_log_var)
         z = self.sampling((z_mean, z_log_var), training)
         return z_mean, z_log_var, z
 
@@ -68,10 +59,10 @@ class Decoder(tfkl.Layer):
 
         self.dense_proj_1 = GatedDense(
             intermediate_dim, name="dense_proj_1"
-        )  # Same as q_z_layers in vampprior
+        )
         self.dense_proj_2 = GatedDense(
             intermediate_dim, name="dense_proj_1"
-        )  # Same as q_z_layers in vampprior
+        )
 
         self.dense_output_mean = tfkl.Dense(
             original_dim,
@@ -139,9 +130,7 @@ class PseudoInputs(tfkl.Layer):
     def __init__(self, output_size, initializer, name, **kwargs):
         super(PseudoInputs, self).__init__(name=name, **kwargs)
 
-        self.layer = tfkl.Dense(
-            output_size, use_bias=False, input_shape=(500, 500)
-        )
+        self.layer = tfkl.Dense(output_size, use_bias=False, input_shape=(500, 500))
 
     def call(self, x):
         x = self.layer(x)
@@ -151,7 +140,6 @@ class PseudoInputs(tfkl.Layer):
 
 
 class VariationalAutoEncoder(tf.keras.Model):
-    """From: https://www.tensorflow.org/guide/keras/custom_layers_and_models#putting_it_all_together_an_end-to-end_example"""
 
     def __init__(self, config, name="autoencoder", **kwargs):
         super(VariationalAutoEncoder, self).__init__(name=name, **kwargs)
@@ -195,7 +183,6 @@ class VariationalAutoEncoder(tf.keras.Model):
         return output_mean
 
     def set_pseudoinputs(self):
-        # Initialize layer weights.
         if self.config["use_training_data_init"]:
             initializer = tf.keras.initializers.Constant(
                 value=self.config["pseudoinputs_mean"]
@@ -209,7 +196,7 @@ class VariationalAutoEncoder(tf.keras.Model):
 
         self.idle_inputs = tf.Variable(
             tf.eye(self.config["nr_components"]), trainable=False
-        )  # This is used to select a number of pseudo inputs from self.means.
+        )
 
     def get_number_of_active_units(self, x):
         z_mean, _, _ = self.encoder(x)
@@ -254,10 +241,9 @@ class VariationalAutoEncoder(tf.keras.Model):
         z_mean, z_log_var, z = self.encoder(inputs, training)
         reconstructed_mean, reconstructed_var = self.decoder(z)
 
-        # KL as implemented in the vampprior paper
-        log_p_z = self.get_prior(z)  # The prior
+        log_p_z = self.get_prior(z)
         log_q_z = log_normal_diag(
             z, z_mean, z_log_var, axis=1
-        )  # Distribution from Encoder.
+        )
 
         return reconstructed_mean, reconstructed_var, z, log_p_z, log_q_z
