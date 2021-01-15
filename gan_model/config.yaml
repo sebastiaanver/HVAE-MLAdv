@@ -1,0 +1,11 @@
+vanilla-gan:
+  latent_dim: 128
+  original_dim: 784
+  batch_size: 256
+  noise_dim: 100
+dc-gan:
+  batch_size: 256
+  noise_dim: 100
+
+gan-type: "dc-gan" # Can be ["vanilla-gan", "dc-gan"]
+epochs: 200

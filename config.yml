@@ -1,0 +1,38 @@
+vanilla:
+  batch_size: 100  #  Size  of batch  used for training.
+  prior: "vampprior"  # The prior to use, can choose from: ["standard", "vampprior"].
+  epochs: 20
+  use_training_data_init: True
+  pseudoinputs_mean: 0.5
+  pseudoinputs_stddev: 0.1
+  nr_components: 500  # Number of pseudo inputs used.
+  latent_dim: 40    # Dimension for the latent space (number of means and covariances).
+  intermediate_dim: 300  # Dimension of intermediate layer between input and latent space (latent_dim ** 2).
+  input_type_is_binary: True
+hierarchical:
+  batch_size: 100  #  Size  of batch  used for training.
+  prior: "vampprior"  # The prior to use, can choose from: ["standard", "vampprior"].
+  epochs: 3
+  use_training_data_init: True
+  pseudoinputs_mean: 0.5
+  pseudoinputs_stddev: 0.1
+  nr_components: 1000  # Number of pseudo inputs used.
+  latent_dim: 40    # Dimension for the latent space (number of means and covariances).
+  intermediate_dim: 300  # Dimension of intermediate layer between input and latent space (latent_dim ** 2).
+  input_type_is_binary: True
+
+dataset_used: "mnist"
+
+dataset:
+    mnist:
+        rows: 28
+        cols: 28
+    fashion_mnist:
+        rows: 28
+        cols: 28
+    frey_faces:
+        rows: 28
+        cols: 20
+    omniglot:
+        rows: 28
+        cols: 28
