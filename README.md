@@ -4,6 +4,8 @@ In addition to reproducing the result we also compare the generative performance
 
 The generative capabilities are compared by using the Interception Score (IS), which measures how diverse the set of generated images are and how similar the are to the original images.
 
+Code for the HVAE and VampPrior is based on the [original implementation](https://github.com/jmtomczak/vae_vampprior), but translated to Tensorflow.
+
 ## Results
 
 #### Generated images MNIST
